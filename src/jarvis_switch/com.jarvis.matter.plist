@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- launchd agent: OPTIONAL always-on Matter server (Aqara devices).
+     By default the Matter server runs on-demand with Jarvis sessions —
+     install this only if you want 24/7 sensor access.
+     1. Replace YOUR_USERNAME with your macOS user:
+          sed -i '' "s/YOUR_USERNAME/$USER/g" com.jarvis.matter.plist
+     2. Install:  cp com.jarvis.matter.plist ~/Library/LaunchAgents/
+                  launchctl load ~/Library/LaunchAgents/com.jarvis.matter.plist
+     Logs:        tail -f /tmp/matter.log -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jarvis.matter</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOUR_USERNAME/Documents/Home_IoT/src/jarvis_switch/.venv/bin/matter-server</string>
+        <string>--storage-path</string>
+        <string>/Users/YOUR_USERNAME/Documents/Home_IoT/matter-data</string>
+        <string>--port</string>
+        <string>5580</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/matter.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/matter.err.log</string>
+</dict>
+</plist>

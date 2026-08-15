@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# Jarvis launcher — one command to turn this Mac into the Jarvis server.
+#
+#   ./jarvis            same as: ./jarvis up
+#   ./jarvis up         start the bridge (background) + open Codex
+#   ./jarvis status     what's running?
+#   ./jarvis logs       follow the bridge log
+#   ./jarvis down       stop the bridge (and the Matter server if we own it)
+#
+# First run ever (not yet paired with Apple Home): the bridge starts in the
+# FOREGROUND so you can scan the QR code. After pairing, Ctrl+C and run
+# ./jarvis up again.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+SWITCH="$ROOT/src/jarvis_switch"
+VENV="$SWITCH/.venv"
+PY="$VENV/bin/python"
+SOCK="$SWITCH/control.sock"
+STATE="$SWITCH/jarvis.state"
+PIDFILE="/tmp/jarvis-bridge.pid"
+MATTER_PIDFILE="/tmp/jarvis-matter.pid"
+LOG="/tmp/jarvis.log"
+
+say_ok()   { printf "  \033[32m✓\033[0m %s\n" "$1"; }
+say_warn() { printf "  \033[33m!\033[0m %s\n" "$1"; }
+
+bridge_running() {
+  [ -S "$SOCK" ] && "$PY" - <<EOF 2>/dev/null
+import socket, sys
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+s.settimeout(1)
+try:
+    s.connect("$SOCK")
+except OSError:
+    sys.exit(1)
+EOF
+}
+
+matter_running() {
+  "$PY" - <<'EOF' 2>/dev/null
+import socket, sys
+try:
+    socket.create_connection(("127.0.0.1", 5580), timeout=1).close()
+except OSError:
+    sys.exit(1)
+EOF
+}
+
+cmd="${1:-up}"
+case "$cmd" in
+
+  up)
+    echo "JARVIS — coming online"
+    if [ ! -x "$PY" ]; then
+      say_warn "Python environment missing. One-time setup:"
+      echo "      cd $SWITCH"
+      echo "      python3 -m venv .venv --prompt Jarvis"
+      echo "      source .venv/bin/activate && pip install -r requirements.txt"
+      exit 1
+    fi
+    if [ ! -f "$STATE" ]; then
+      say_warn "Not paired with Apple Home yet — starting in FOREGROUND."
+      say_warn "Scan the QR code below with the Home app (+ → Add Accessory),"
+      say_warn "then Ctrl+C and run ./jarvis up again."
+      cd "$SWITCH" && exec "$PY" jarvis.py
+    fi
+    if bridge_running; then
+      say_ok "bridge already running"
+    else
+      (cd "$SWITCH" && nohup "$PY" jarvis.py >>"$LOG" 2>&1 &
+       echo $! > "$PIDFILE")
+      sleep 2
+      if bridge_running; then
+        say_ok "bridge started (log: $LOG)"
+      else
+        say_warn "bridge failed to start — check: tail -20 $LOG"
+        exit 1
+      fi
+    fi
+    if pgrep -xq "Codex"; then
+      say_ok "Codex already running (keep it on a project chat)"
+    elif open -a "Codex" 2>/dev/null; then
+      say_ok "Codex opened — leave it on a Home_IoT project chat"
+    else
+      say_warn "Codex app not found — voice sessions won't have a brain"
+    fi
+    say_ok "Matter server: starts on demand with each session"
+    echo
+    echo "  All set. Say: \"Hey Siri, Call Jarvis\""
+    ;;
+
+  status)
+    echo "JARVIS — status"
+    if [ -x "$PY" ]; then say_ok "venv present"; else say_warn "venv MISSING"; fi
+    if [ -f "$STATE" ]; then say_ok "paired with Apple Home"; else say_warn "NOT paired yet"; fi
+    if bridge_running; then say_ok "bridge running"; else say_warn "bridge NOT running"; fi
+    if matter_running; then say_ok "matter server running"; else say_ok "matter server idle (on-demand)"; fi
+    if pgrep -xq "Codex"; then say_ok "Codex running"; else say_warn "Codex NOT running"; fi
+    ;;
+
+  logs)
+    exec tail -f "$LOG"
+    ;;
+
+  down)
+    echo "JARVIS — going dark"
+    if [ -f "$PIDFILE" ] && kill "$(cat "$PIDFILE")" 2>/dev/null; then
+      say_ok "bridge stopped"
+    elif pkill -f "jarvis_switch/jarvis.py\|python jarvis.py" 2>/dev/null; then
+      say_ok "bridge stopped"
+    else
+      say_ok "bridge was not running"
+    fi
+    rm -f "$PIDFILE"
+    if [ -f "$MATTER_PIDFILE" ] && kill "$(cat "$MATTER_PIDFILE")" 2>/dev/null; then
+      say_ok "matter server stopped"
+      rm -f "$MATTER_PIDFILE"
+    fi
+    ;;
+
+  *)
+    grep '^#   ' "$0" | sed 's/^#   //'
+    exit 1
+    ;;
+esac

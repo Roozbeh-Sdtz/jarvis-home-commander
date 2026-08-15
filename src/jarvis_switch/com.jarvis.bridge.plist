@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- launchd agent: runs the Jarvis Bridge at login, restarts on crash.
+     1. Replace YOUR_USERNAME with your macOS user:
+          sed -i '' "s/YOUR_USERNAME/$USER/g" com.jarvis.bridge.plist
+     2. Install:  cp com.jarvis.bridge.plist ~/Library/LaunchAgents/
+                  launchctl load ~/Library/LaunchAgents/com.jarvis.bridge.plist
+     Logs:        tail -f /tmp/jarvis.log -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jarvis.bridge</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOUR_USERNAME/Documents/Home_IoT/src/jarvis_switch/.venv/bin/python</string>
+        <string>/Users/YOUR_USERNAME/Documents/Home_IoT/src/jarvis_switch/jarvis.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/YOUR_USERNAME/Documents/Home_IoT/src/jarvis_switch</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/jarvis.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/jarvis.err.log</string>
+</dict>
+</plist>

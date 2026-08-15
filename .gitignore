@@ -1,0 +1,20 @@
+# Secrets — HomeKit pairing keys, machine-specific
+*.state
+
+# Environments & caches
+.venv/
+__pycache__/
+*.pyc
+
+# Local secrets & machine-specific settings
+.env
+config_local.py
+
+# macOS noise
+.DS_Store
+
+# Runtime
+*.sock
+
+# Matter fabric credentials — secrets, machine-specific
+matter-data/

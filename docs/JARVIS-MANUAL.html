@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Owner's Manual</title>
+<style>
+  :root {
+    --bg: #0a0e14; --panel: #111722; --panel2: #0d1320;
+    --text: #c8d3e0; --dim: #7a8699; --accent: #35c9f0; --accent2: #ffd166;
+    --ok: #3ddc84; --todo: #ffd166; --border: #1e2836; --code-bg: #0b1018;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, "Helvetica Neue", Segoe UI, sans-serif;
+  }
+  .wrap { display: flex; max-width: 1200px; margin: 0 auto; }
+  nav {
+    position: sticky; top: 0; align-self: flex-start; height: 100vh;
+    width: 240px; flex-shrink: 0; padding: 28px 16px; overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+  nav h1 {
+    font-size: 20px; letter-spacing: 4px; color: var(--accent);
+    margin: 0 0 2px; font-weight: 700;
+  }
+  nav .sub { font-size: 11px; color: var(--dim); margin-bottom: 22px; }
+  nav a {
+    display: block; color: var(--dim); text-decoration: none;
+    padding: 6px 10px; border-radius: 8px; font-size: 14px; margin: 1px 0;
+  }
+  nav a:hover { color: var(--text); background: var(--panel); }
+  nav a .b { margin-right: 6px; }
+  main { flex: 1; padding: 28px 36px 80px; min-width: 0; }
+  header.hero {
+    background: linear-gradient(135deg, #0d1826, #101a2c 60%, #0d1424);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 26px 30px; margin-bottom: 26px;
+  }
+  header.hero h2 { margin: 0 0 6px; color: #fff; font-size: 26px; }
+  header.hero p { margin: 0; color: var(--dim); }
+  header.hero .glow { color: var(--accent); text-shadow: 0 0 12px rgba(53,201,240,.6); }
+  details.card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; margin: 14px 0; overflow: hidden;
+  }
+  details.card summary {
+    cursor: pointer; list-style: none; padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px; user-select: none;
+  }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary:hover { background: var(--panel2); }
+  .chev { color: var(--dim); transition: transform .2s; font-size: 12px; }
+  details[open] .chev { transform: rotate(90deg); }
+  summary h3 { margin: 0; font-size: 17px; color: #fff; font-weight: 600; flex: 1; }
+  .badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .badge.ok   { color: var(--ok);   background: rgba(61,220,132,.12); border: 1px solid rgba(61,220,132,.4); }
+  .badge.todo { color: var(--todo); background: rgba(255,209,102,.10); border: 1px solid rgba(255,209,102,.4); }
+  .badge.info { color: var(--accent); background: rgba(53,201,240,.10); border: 1px solid rgba(53,201,240,.4); }
+  .body { padding: 4px 22px 20px; border-top: 1px solid var(--border); }
+  .body p { margin: 12px 0; }
+  .body ol, .body ul { padding-left: 22px; }
+  .body li { margin: 7px 0; }
+  code {
+    font-family: var(--mono); font-size: 13.5px; color: var(--accent2);
+    background: var(--code-bg); padding: 2px 6px; border-radius: 5px;
+  }
+  .cmd {
+    position: relative; background: var(--code-bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 90px 13px 16px; margin: 10px 0;
+    font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap;
+    color: #d7e3f4; overflow-x: auto;
+  }
+  .cmd .c { color: #5d6b80; }
+  .copy {
+    position: absolute; top: 8px; right: 8px; cursor: pointer;
+    background: var(--panel); color: var(--dim); border: 1px solid var(--border);
+    border-radius: 7px; font-size: 11.5px; padding: 4px 10px;
+  }
+  .copy:hover { color: var(--accent); border-color: var(--accent); }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--dim); font-weight: 600; font-size: 12.5px; letter-spacing: .5px; text-transform: uppercase; }
+  td code { font-size: 12.5px; }
+  .say {
+    border-left: 3px solid var(--accent); background: rgba(53,201,240,.06);
+    padding: 10px 16px; border-radius: 0 10px 10px 0; margin: 12px 0;
+    font-style: italic; color: #a9c8dd;
+  }
+  .warn {
+    border-left: 3px solid var(--accent2); background: rgba(255,209,102,.06);
+    padding: 10px 16px; border-radius: 0 10px 10px 0; margin: 12px 0; color: #d8c9a0;
+  }
+  .check { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+  .check.done label { color: var(--dim); text-decoration: line-through; }
+  .check label { cursor: pointer; }
+  .diagram {
+    font-family: var(--mono); font-size: 12.5px; color: #9fb4cc;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; white-space: pre; overflow-x: auto;
+  }
+  @media (max-width: 800px) { nav { display: none; } main { padding: 18px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h1>J.A.R.V.I.S.</h1>
+  <div class="sub">Home_IoT · Owner's Manual</div>
+  <a href="#launch"><span class="b">⏻</span>Start from terminal</a>
+  <a href="#overview"><span class="b">◈</span>What Jarvis is</a>
+  <a href="#files"><span class="b">▤</span>Files &amp; paths</a>
+  <a href="#audio"><span class="b">♪</span>Audio setup</a>
+  <a href="#p1"><span class="b">⚡</span>Electricity &amp; gas</a>
+  <a href="#bosch"><span class="b">◉</span>Appliances</a>
+  <a href="#hue"><span class="b">☀</span>Lights (Hue)</a>
+  <a href="#aqara"><span class="b">°C</span>Sensors (Aqara)</a>
+  <a href="#siri"><span class="b">◍</span>Siri chain (pairing)</a>
+  <a href="#homekit"><span class="b">⌂</span>Apple Home / Eve</a>
+  <a href="#progress"><span class="b">✓</span>Setup progress</a>
+  <a href="#queue"><span class="b">…</span>Improvement queue</a>
+  <a href="#trouble"><span class="b">✚</span>Troubleshooting</a>
+</nav>
+<main>
+
+<header class="hero">
+  <h2>Good evening, sir. <span class="glow">Systems online.</span></h2>
+  <p>Say <b>"Siri, Call Jarvis"</b> near the HomePod — your Mac routes audio to the living room,
+  listens through your iPhone, and opens a Codex voice chat that knows the whole house.
+  <b>"Siri, Dismiss Jarvis"</b> ends the session and restores everything.</p>
+</header>
+
+<details class="card" id="launch" open>
+  <summary><span class="chev">▶</span><h3>Starting Jarvis from the terminal</h3><span class="badge info">QUICK START</span></summary>
+  <div class="body">
+    <p><b>The one command.</b> Came home with the Mac? This starts everything —
+    bridge in the background, Codex opened, status checks — and tells you when
+    it's safe to say the magic words:</p>
+    <div class="cmd">cd ~/Documents/Home_IoT &amp;&amp; ./jarvis<button class="copy">copy</button></div>
+    <div class="cmd">./jarvis status   <span class="c"># what's running?</span>
+./jarvis logs     <span class="c"># follow the bridge log (hi/bye + errors)</span>
+./jarvis down     <span class="c"># stop the server processes</span><button class="copy">copy</button></div>
+    <p>First run ever (unpaired): it starts in the foreground instead so you can scan
+    the pairing QR — then Ctrl+C and <code>./jarvis</code> again.</p>
+    <p><b>Under the hood</b> — the manual equivalent of what <code>./jarvis</code> does:</p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/jarvis_switch
+source .venv/bin/activate
+python jarvis.py<button class="copy">copy</button></div>
+    <p><b>2 · Start a voice session.</b> Normally Siri does this ("Call Jarvis"), but from
+    the terminal — open a <b>second terminal tab</b>:</p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/jarvis_switch
+source .venv/bin/activate
+python session.py start   <span class="c"># audio → HomePod/iPhone, greeting, Codex voice chat</span>
+python session.py end     <span class="c"># farewell + audio restored ("Dismiss Jarvis")</span><button class="copy">copy</button></div>
+    <div class="warn"><b>Rule of thumb — where commands run:</b> there are only two
+    working folders. Bridge &amp; voice session commands →
+    <code>~/Documents/Home_IoT/src/jarvis_switch</code>. Device scripts
+    (<code>hue.py</code>, <code>homewizard.py</code>, <code>bosch.py</code>,
+    <code>matter.py</code>, <code>homekit.py</code>) →
+    <code>~/Documents/Home_IoT/src/devices</code>. Every <code>python</code> command
+    needs the venv active first — your prompt then shows <code>(Jarvis)</code>.
+    <code>SwitchAudioSource</code>, <code>launchctl</code>, <code>echo … &gt;&gt; .env</code>
+    work from anywhere, no venv.</div>
+    <p><b>Before a session can open with project context:</b> Codex must be running with
+    its front window on a chat <b>inside the Home_IoT project</b>.</p>
+    <p><b>Handy · list all audio devices</b> (names for <code>AUDIO_OUTPUT</code> /
+    <code>AUDIO_INPUT</code> in config.py — details in the Audio section):</p>
+    <div class="cmd">SwitchAudioSource -a -t output   <span class="c"># all outputs (find the HomePod)</span>
+SwitchAudioSource -a -t input    <span class="c"># all inputs (find the iPhone mic)</span>
+SwitchAudioSource -c -t output   <span class="c"># which output is active right now</span><button class="copy">copy</button></div>
+  </div>
+</details>
+
+<details class="card" id="overview" open>
+  <summary><span class="chev">▶</span><h3>How it works</h3><span class="badge info">ARCHITECTURE</span></summary>
+  <div class="body">
+    <div class="diagram">Siri / HomePod ──▶ Jarvis Bridge (HomeKit) ──▶ session.py ──▶ Codex voice chat
+                                                                │
+        Hue lights ── HomeWizard P1 ── Bosch appliances ────────┤  runs scripts in
+        Apple Home devices (Eve watering) via homekit.py ───────┘  src/devices/</div>
+    <p>Everything runs locally on this Mac except Bosch and Aqara (cloud APIs).
+    The rules Jarvis follows live in <code>agents/jarvis.md</code>; security policy in
+    <code>docs/security.md</code>.</p>
+    <p>Before running any script by hand, activate the environment (prompt shows <code>(Jarvis)</code>):</p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate<button class="copy">copy</button></div>
+  </div>
+</details>
+
+<details class="card" id="files">
+  <summary><span class="chev">▶</span><h3>The files you'll actually touch</h3></summary>
+  <div class="body">
+    <table>
+      <tr><th>What</th><th>Full path</th></tr>
+      <tr><td>Main settings (audio, hotkey, switches, greeting)</td><td><code>~/Documents/Home_IoT/src/jarvis_switch/config.py</code></td></tr>
+      <tr><td>Device secrets (IPs, tokens)</td><td><code>~/Documents/Home_IoT/.env</code></td></tr>
+      <tr><td>What happens on Call / Dismiss</td><td><code>~/Documents/Home_IoT/src/jarvis_switch/actions.py</code></td></tr>
+      <tr><td>Jarvis's personality &amp; abilities</td><td><code>~/Documents/Home_IoT/agents/jarvis.md</code></td></tr>
+      <tr><td>Device scripts</td><td><code>~/Documents/Home_IoT/src/devices/</code></td></tr>
+    </table>
+  </div>
+</details>
+
+<details class="card" id="audio" open>
+  <summary><span class="chev">▶</span><h3>Audio — HomePod out, iPhone in</h3><span class="badge todo">DO NOW</span></summary>
+  <div class="body">
+    <p>Edit <code>src/jarvis_switch/config.py</code> and set the two names so they
+    match macOS <b>exactly</b>:</p>
+    <div class="cmd">AUDIO_OUTPUT = "HomePod Living Room"          <span class="c"># Jarvis's voice</span>
+AUDIO_INPUT  = "Your iPhone Microphone"  <span class="c"># Jarvis's ears</span><button class="copy">copy</button></div>
+    <p>Find the exact names (any terminal, no venv needed):</p>
+    <div class="cmd">SwitchAudioSource -a -t output   <span class="c"># HomePod's AirPlay name</span>
+SwitchAudioSource -a -t input    <span class="c"># iPhone Continuity mic name</span><button class="copy">copy</button></div>
+    <div class="warn"><b>Why the HomePod / soundbar don't appear in that list:</b> the
+    Sound menu mixes real audio devices with <b>AirPlay targets</b> (Living Room HomePod,
+    Apple TV, Q-Series soundbar). AirPlay targets only become audio devices <i>while
+    selected</i>, so <code>SwitchAudioSource</code> can't switch to them when idle. And
+    macOS Shortcuts has no "Set Playback Destination" action (iOS-only — checked
+    2026-08-15). The working route: the session <b>clicks the device in the menu-bar
+    Sound flyout</b> for you, found by name via accessibility.</div>
+    <ol>
+      <li>One-time: System Settings → Control Center → <b>Sound</b> →
+          <b>"Always Show in Menu Bar"</b> (the script opens that icon's flyout).</li>
+      <li>In config.py set <code>AUDIO_OUTPUT_AIRPLAY = "Living Room"</code> — the name
+          exactly as shown in the Sound menu (or the Q-Series soundbar's name instead).</li>
+      <li>Test routing alone:
+        <div class="cmd">cd ~/Documents/Home_IoT/src/jarvis_switch
+source .venv/bin/activate
+python session.py airplay   <span class="c"># Sound flyout opens, Living Room gets selected</span><button class="copy">copy</button></div></li>
+      <li>Away from home? Set <code>AUDIO_OUTPUT_AIRPLAY = ""</code> to fall back to
+          plain device switching via <code>AUDIO_OUTPUT</code>.</li>
+    </ol>
+    <ul>
+      <li>Restoring audio on "Dismiss Jarvis" still works — your previous output is a
+          normal device SwitchAudioSource can switch back to.</li>
+      <li>iPhone mic needs Continuity: nearby, same Apple ID, BT + Wi-Fi on
+          (System Settings → General → AirDrop &amp; Handoff).</li>
+    </ul>
+    <p>Test the whole session without Siri:</p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/jarvis_switch &amp;&amp; source .venv/bin/activate
+python session.py start   <span class="c"># greeting from the HomePod = success</span>
+python session.py end     <span class="c"># audio restored</span><button class="copy">copy</button></div>
+    <p>Greeting text &amp; voice: <code>GREETING</code>, <code>FAREWELL</code>, <code>VOICE</code> in the same file.</p>
+  </div>
+</details>
+
+<details class="card" id="p1">
+  <summary><span class="chev">▶</span><h3>Electricity &amp; gas — HomeWizard P1</h3><span class="badge ok">✓ WORKING</span></summary>
+  <div class="body">
+    <p><b>Configured 2026-08-14.</b> IP + token live in <code>.env</code>
+    (<code>HW_P1_IP</code>, <code>HW_P1_TOKEN</code>).</p>
+    <p><b>Daily use:</b></p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python homewizard.py summary   <span class="c"># power now, kWh totals, gas</span>
+python homewizard.py power     <span class="c"># watts (negative = exporting)</span>
+python homewizard.py gas       <span class="c"># gas meter reading</span><button class="copy">copy</button></div>
+    <div class="say">"Jarvis, how much power is the house using?" · "What's the gas reading?"</div>
+    <p><b>Full setup from scratch</b> (redo if the meter is reset, its IP changes, or the
+    token is deleted):</p>
+    <ol>
+      <li>HomeWizard app → Settings → Meters → your P1 → enable <b>Local API</b>.</li>
+      <li>Find the meter's IP (same app screen, or router client list — look for
+          "HWE-P1"). Give it a <b>DHCP reservation</b> in the router so it never changes.</li>
+      <li>Save the IP:
+        <div class="cmd">echo "HW_P1_IP=192.168.x.x" &gt;&gt; ~/Documents/Home_IoT/.env<button class="copy">copy</button></div></li>
+      <li>Pair — run this, then <b>press the physical button on the P1 meter</b> within
+          60 seconds (token saves to .env automatically):
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python homewizard.py pair<button class="copy">copy</button></div></li>
+      <li>Verify (same terminal): <code>python homewizard.py summary</code></li>
+    </ol>
+    <div class="warn">Needs firmware ≥ 6 for API v2 (update via the HomeWizard app) and the
+    Mac on the same network as the meter.</div>
+  </div>
+</details>
+
+<details class="card" id="bosch">
+  <summary><span class="chev">▶</span><h3>Appliances — Bosch Home Connect</h3><span class="badge ok">✓ WORKING</span></summary>
+  <div class="body">
+    <p><b>Configured 2026-08-14.</b> Device-Flow app "Jarvis" at developer.home-connect.com;
+    tokens in <code>.env</code>.</p>
+    <p><b>Daily use:</b></p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python bosch.py appliances       <span class="c"># washer, dishwasher, dryer + state</span>
+python bosch.py status &lt;haId&gt;    <span class="c"># active program + remaining time</span><button class="copy">copy</button></div>
+    <div class="say">"Jarvis, is the washing machine done?" · "Anything running at home?"</div>
+    <div class="warn"><b>About tokens (normal behavior, not a bug):</b> the access token
+    expires after ~24 h <i>by design</i>. The script now <b>auto-refreshes</b> it using the
+    refresh token (~2-month lifetime), so this is usually invisible. If it still says
+    unauthorized — refresh token expired or was revoked — redo step 4 below. One warning
+    per ~2 months is expected.</div>
+    <p><b>Full setup from scratch:</b></p>
+    <ol>
+      <li>Developer account at <code>developer.home-connect.com</code> — use the <b>same
+          email</b> as your Home Connect phone-app account (that link is what exposes your
+          real appliances).</li>
+      <li>Register Application: Application ID <code>Jarvis</code>, OAuth Flow:
+          <b>Device Flow</b> (cannot be changed later), testing-account field blank (same
+          email) — or your app-account email if different, Success Redirect blank,
+          all three Advanced checkboxes <b>unchecked</b> (especially One Time Token Mode).
+          Copy the <b>Client ID</b>.</li>
+      <li>Save it:
+        <div class="cmd">echo "BOSCH_CLIENT_ID=paste-here" &gt;&gt; ~/Documents/Home_IoT/.env<button class="copy">copy</button></div></li>
+      <li>Authorize — opens a URL; log in with your Home Connect account and approve
+          (tokens save to .env automatically):
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python bosch.py auth<button class="copy">copy</button></div></li>
+      <li>Verify (same terminal): <code>python bosch.py appliances</code> — three machines should list.</li>
+    </ol>
+    <div class="warn">A freshly created Client ID can take a few minutes to activate —
+    if <code>auth</code> says "invalid client", wait 5 minutes and retry. Works from any
+    network (cloud API) — no need to be home.</div>
+  </div>
+</details>
+
+<details class="card" id="hue" open>
+  <summary><span class="chev">▶</span><h3>Lights — Philips Hue</h3><span class="badge todo">DO NEXT</span></summary>
+  <div class="body">
+    <p>Local API on the Hue Bridge Pro — no cloud, instant.</p>
+    <ol>
+      <li>Find the bridge IP: Hue app → Settings → My Hue system → bridge → ℹ️
+          (or <code>https://discovery.meethue.com</code>). Give it a DHCP reservation in the router.</li>
+      <li>Save the IP:
+        <div class="cmd">echo "HUE_BRIDGE_IP=192.168.x.x" &gt;&gt; ~/Documents/Home_IoT/.env<button class="copy">copy</button></div></li>
+      <li><b>Press the round link button on the bridge</b>, then within 30 seconds:
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python hue.py pair   <span class="c"># saves HUE_APP_KEY to .env</span><button class="copy">copy</button></div></li>
+      <li>Test (same terminal — or standalone:)
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python hue.py lights
+python hue.py on "Living room"
+python hue.py bri "Living room" 40
+python hue.py off "Living room"<button class="copy">copy</button></div></li>
+    </ol>
+    <div class="say">"Jarvis, turn on the living room lights" · "Dim the bedroom to 20 percent"</div>
+  </div>
+</details>
+
+<details class="card" id="aqara">
+  <summary><span class="chev">▶</span><h3>Aqara (M3 hub) — sensors, plugs, shades, AC</h3><span class="badge ok">✓ WORKING</span></summary>
+  <div class="body">
+    <p><b>Route 1 — LOCAL via Matter (recommended, implemented, no waiting):</b>
+    the M3 is a Matter bridge, and Matter allows multiple controllers. A local
+    Matter server on this Mac reads the same sensors Apple Home sees — no cloud,
+    works offline, instant.</p>
+    <ol>
+      <li>Install the Matter server into the venv (large download, one time):
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+pip install -r requirements-matter.txt<button class="copy">copy</button></div></li>
+      <li>Start the server — <b>same terminal</b> (venv still active); it keeps running,
+          leave this tab open (or install the launchd agent, step 5, and skip this):
+        <div class="cmd">matter-server --storage-path ~/Documents/Home_IoT/matter-data<button class="copy">copy</button></div></li>
+      <li>iPhone Home app → the <b>M3 hub</b> accessory → Accessory Details →
+          <b>Turn On Pairing Mode</b> → note the setup code, then within ~15 min,
+          in a <b>new terminal tab</b>:
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python matter.py commission 1234-567-8901   <span class="c"># your code</span><button class="copy">copy</button></div></li>
+      <li>Wait ~1 minute (bridge interview), then — same terminal as step 3:
+        <div class="cmd">python matter.py sensors             <span class="c"># all temp/humidity + battery</span>
+python matter.py temp "Bedroom"      <span class="c"># one sensor by name</span>
+python matter.py states              <span class="c"># doors / leaks / smoke states</span>
+python matter.py on "Air Purifier"   <span class="c"># control: plugs on/off</span>
+python matter.py open "Roller Shade" <span class="c"># shades: open/close/position N</span>
+python matter.py ac                  <span class="c"># aircon status (room temp, mode)</span>
+python matter.py ac cool 22          <span class="c"># cool to 22 C; also: heat N, off, auto</span><button class="copy">copy</button></div>
+        Matter is bidirectional — plugs and shades are controllable, sensors are
+        readable. (Commissioned 2026-08-16: 23 endpoints came through, including
+        the Air Conditioner at ep 2.)</li>
+      <li><b>Give devices their room names.</b> The M3 exposes product names
+          ("Aqara Temp/Humidity Sensor" ×3), so edit
+          <code>~/Documents/Home_IoT/src/devices/matter_aliases.py</code> and map
+          endpoints → your names ("Bedroom", "Air Purifier", …). The file explains
+          how to identify which endpoint is which (compare readings with the Aqara
+          app, breathe on a sensor, toggle a plug by <code>on "ep 23"</code>).
+          Until aliased, target devices by endpoint number.</li>
+      <li><b>Lifecycle — nothing to install:</b> after this one-time setup, the server
+          runs <b>on demand</b>: it starts automatically when a Jarvis session begins
+          and stops on "Dismiss Jarvis" (<code>MATTER_ON_DEMAND</code> in config.py).
+          The first Aqara query of a session may take a few extra seconds while it
+          boots — <code>matter.py</code> waits automatically. Optional alternative for
+          always-on use (e.g. future leak alerts): the launchd agent
+          <div class="cmd">cp ~/Documents/Home_IoT/src/jarvis_switch/com.jarvis.matter.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.jarvis.matter.plist<button class="copy">copy</button></div>
+          If launchd (or a manual server) is already running, sessions detect it and
+          leave it untouched.</li>
+    </ol>
+    <div class="say">"Jarvis, what's the bedroom temperature?"</div>
+    <div class="warn">Sensor names come from the M3's bridged labels — rename sensors in
+    the Aqara app if <code>matter.py sensors</code> shows unhelpful names. If pip can't
+    resolve the CHIP wheels, try Python 3.12 for the venv.</div>
+    <p><b>Route 2 — Aqara cloud API</b> (application submitted 2026-08-15, awaiting
+    moderation): kept as backup in <code>aqara.py</code>. If approved and ever needed:
+    save AppId/AppKey/KeyId + region domain in <code>.env</code>, then have a dev agent
+    implement the signed calls. With Route 1 working, this is optional.</p>
+  </div>
+</details>
+
+<details class="card" id="siri" open>
+  <summary><span class="chev">▶</span><h3>The Siri chain — pair the bridge &amp; wake phrases</h3><span class="badge todo">DO NOW</span></summary>
+  <div class="body">
+    <p>This connects "Hey Siri" to Python. The Mac runs a virtual HomeKit bridge
+    (<b>Jarvis Bridge</b>) carrying the <b>Jarvis</b> trigger switch; Siri scenes flip
+    that switch; flipping it starts/ends the voice session.</p>
+
+    <p><b>1 · Start the bridge</b> — it prints a QR code and PIN, keep it running:</p>
+    <div class="cmd">cd ~/Documents/Home_IoT/src/jarvis_switch
+source .venv/bin/activate
+python jarvis.py<button class="copy">copy</button></div>
+
+    <p><b>2 · Pair with Apple Home (once, at home):</b></p>
+    <ol>
+      <li>iPhone → <b>Home app → + → Add Accessory</b>.</li>
+      <li>Scan the QR code shown in the terminal. If the camera won't read it:
+          <i>More options… → Jarvis Bridge → enter the 8-digit PIN</i> printed under the QR.</li>
+      <li>Accept the <i>"uncertified accessory"</i> warning — normal for DIY accessories.</li>
+      <li>Assign rooms; both switches arrive together: <b>Jarvis</b> (the trigger) and
+          <b>Jarvis Light</b> (a command switch for later).</li>
+    </ol>
+
+    <p><b>3 · Create the voice scenes</b> — Siri activates a scene by speaking its
+    <i>name</i>, and several scenes can flip the same switch, so you can have as many
+    wake phrases as you like:</p>
+    <ol>
+      <li>Home app → <b>+ → Add Scene → Custom</b>.</li>
+      <li>Scene <code>Call Jarvis</code> → Add Accessories → <b>Jarvis</b> → tile set to <b>On</b> → Done.</li>
+      <li>Scene <code>Wake up, daddy's home</code> → same accessory, also <b>On</b>. (Second wake phrase.)</li>
+      <li>Scene <code>Dismiss Jarvis</code> → <b>Jarvis</b> set to <b>Off</b>. (Ends the session, restores audio.)</li>
+    </ol>
+    <div class="warn"><b>Phrase tips:</b> if Siri mishears or tries to phone a contact,
+    rename the scene — the spoken phrase is always exactly the scene name. Test each
+    phrase once on the HomePod; adjust wording until Siri gets it reliably.</div>
+
+    <p><b>4 · Test the full chain</b> — bridge running, Codex open on a project chat:</p>
+    <div class="say">"Hey Siri, Call Jarvis" → terminal prints <code>hi</code> → HomePod greets you → voice chat opens.<br>
+    "Hey Siri, Wake up daddy's home" → same thing.<br>
+    "Hey Siri, Dismiss Jarvis" → farewell → audio restored.</div>
+
+    <div class="warn"><b>Troubleshooting pairing:</b> accessory not found → Mac and iPhone
+    on the same network? Firewall allowing Python? · Want to re-pair from scratch →
+    stop the bridge, delete <code>src/jarvis_switch/jarvis.state</code>, remove the bridge
+    from the Home app, start again (the QR/PIN regenerate). · The bridge process must be
+    running at all times for Siri to reach it — autostart via launchd is in the
+    Improvement queue.</div>
+  </div>
+</details>
+
+<details class="card" id="homekit">
+  <summary><span class="chev">▶</span><h3>Apple Home devices — Eve watering &amp; friends</h3><span class="badge todo">NEEDS PAIRING</span></summary>
+  <div class="body">
+    <p>Devices that live only in Apple Home are driven via <b>command switches</b> —
+    virtual switches Python flips, which your Home-app automations react to.</p>
+    <ol>
+      <li>Pair the Jarvis Bridge once (at home): run it, scan the QR from the Home app.
+          Full steps: <code>docs/setup-jarvis-switch.md</code>.</li>
+      <li>One switch per routine in <code>src/jarvis_switch/config.py</code>:
+        <div class="cmd">COMMAND_SWITCHES = ["Jarvis Light", "Jarvis Water Garden"]<button class="copy">copy</button></div>
+        Restart the bridge — new switches appear in Apple Home automatically.</li>
+      <li>Home app → Automation → <i>An Accessory is Controlled</i>: two automations per
+          switch (<i>turns on → …</i> and <i>turns off → …</i>).</li>
+      <li>Use (the Jarvis Bridge must be running):
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python homekit.py list
+python homekit.py on "Jarvis Water Garden"<button class="copy">copy</button></div></li>
+    </ol>
+    <div class="say">"Jarvis, water the garden" — it confirms first, by design.</div>
+  </div>
+</details>
+
+<details class="card" id="progress" open>
+  <summary><span class="chev">▶</span><h3>Setup progress</h3><span class="badge info">CHECKLIST</span></summary>
+  <div class="body" id="checklist">
+    <div class="check"><input type="checkbox" id="c1" checked disabled><label for="c1">HomeWizard P1 paired &amp; tested</label></div>
+    <div class="check"><input type="checkbox" id="c2" checked disabled><label for="c2">Bosch Home Connect authorized &amp; tested</label></div>
+    <div class="check"><input type="checkbox" id="c3" checked disabled><label for="c3">Voice pipeline verified (greeting → project voice chat → Jarvis persona)</label></div>
+    <div class="check"><input type="checkbox" id="c12"><label for="c12">Sound icon set to "Always Show in Menu Bar" + <code>AUDIO_OUTPUT_AIRPLAY = "Living Room"</code> in config.py + <code>python session.py airplay</code> works</label></div>
+    <div class="check"><input type="checkbox" id="c13"><label for="c13"><code>AUDIO_INPUT</code> set to iPhone Continuity mic in config.py</label></div>
+    <div class="check"><input type="checkbox" id="c4"><label for="c4">Audio tested at home: greeting plays from the HomePod (<code>python session.py start</code>)</label></div>
+    <div class="check"><input type="checkbox" id="c5"><label for="c5">Hue paired (<code>hue.py pair</code>) &amp; a light tested</label></div>
+    <div class="check"><input type="checkbox" id="c6"><label for="c6">Jarvis Bridge paired with Apple Home</label></div>
+    <div class="check"><input type="checkbox" id="c7"><label for="c7">Scenes created: "Call Jarvis" / "Dismiss Jarvis"</label></div>
+    <div class="check"><input type="checkbox" id="c8"><label for="c8">Command-switch automations created in Home app</label></div>
+    <div class="check"><input type="checkbox" id="c9" checked disabled><label for="c9">Aqara via local Matter: commissioned, sensors + AC control verified live</label></div>
+    <div class="check"><input type="checkbox" id="c10"><label for="c10">Room names filled in <code>matter_aliases.py</code> (temp sensors, plugs, shades, leaks)</label></div>
+    <div class="check"><input type="checkbox" id="c11"><label for="c11">Full end-to-end: "Siri, Call Jarvis" → conversation → device control</label></div>
+  </div>
+</details>
+
+<details class="card" id="queue">
+  <summary><span class="chev">▶</span><h3>Improvement queue (for dev sessions)</h3></summary>
+  <div class="body">
+    <ul>
+      <li><s>Bosch: token auto-refresh in <code>bosch.py</code>.</s> ✓ done 2026-08-15.</li>
+      <li>Aqara: implement Part B once credentials exist.</li>
+      <li>Bridge autostart at login via launchd (<code>com.jarvis.bridge.plist</code>).</li>
+      <li>Matter multi-admin (Aqara M3 / Eve) to go fully local.</li>
+    </ul>
+  </div>
+</details>
+
+<details class="card" id="trouble">
+  <summary><span class="chev">▶</span><h3>Troubleshooting</h3></summary>
+  <div class="body">
+    <table>
+      <tr><th>Symptom</th><th>Fix</th></tr>
+      <tr><td>Greeting plays on Mac speakers</td><td>HomePod name wrong in config.py or different network — recheck <code>SwitchAudioSource -a -t output</code></td></tr>
+      <tr><td>Voice chat opens without project</td><td>Codex front window must be on a chat inside Home_IoT before the session starts</td></tr>
+      <tr><td>"not allowed to send keystrokes"</td><td>Terminal needs Accessibility permission (System Settings → Privacy &amp; Security)</td></tr>
+      <tr><td><code>homekit.py</code>: "Bridge is not running"</td><td>Start it: <code>python jarvis.py</code> in <code>src/jarvis_switch</code> (venv active)</td></tr>
+      <tr><td>Bosch unauthorized even after auto-refresh</td><td><code>python bosch.py auth</code> (refresh token lapses ~2-monthly)</td></tr>
+      <tr><td>Hue "link button not pressed"</td><td>Press the round button, retry <code>pair</code> within 30 s</td></tr>
+      <tr><td>"Missing X in .env"</td><td>Add that key — see the device sections or <code>.env.example</code></td></tr>
+      <tr><td>Several .env values suddenly gone</td><td>Someone ran <code>cp .env.example .env</code> again — it <b>overwrites</b> the file. Re-add Client ID + re-run pair/auth. Never run that cp after first setup (use <code>cp -n</code> if unsure)</td></tr>
+    </table>
+  </div>
+</details>
+
+</main>
+</div>
+<script>
+  // Copy buttons
+  document.querySelectorAll(".copy").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      const block = btn.parentElement.cloneNode(true);
+      block.querySelector(".copy").remove();
+      navigator.clipboard.writeText(block.textContent.trim()).then(() => {
+        btn.textContent = "copied ✓";
+        setTimeout(() => (btn.textContent = "copy"), 1500);
+      });
+    });
+  });
+  // Checklist persistence (localStorage survives reopening the file)
+  const boxes = document.querySelectorAll('#checklist input[type="checkbox"]');
+  boxes.forEach(box => {
+    try {
+      if (!box.disabled && localStorage.getItem("jarvis-" + box.id) === "1") box.checked = true;
+    } catch (e) {}
+    const sync = () => box.closest(".check").classList.toggle("done", box.checked);
+    sync();
+    box.addEventListener("change", () => {
+      try { localStorage.setItem("jarvis-" + box.id, box.checked ? "1" : "0"); } catch (e) {}
+      sync();
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Local Matter controller for Aqara M3 (and any Matter device).
+# Install into the SAME venv:  pip install -r requirements-matter.txt
+# Includes the CHIP/Matter SDK — a large download; be patient.
+# If wheels fail to resolve on your Python version, try Python 3.12.
+python-matter-server[server]
