@@ -59,8 +59,10 @@ AUDIO_OUTPUT_AIRPLAY = "Living Room"   # name exactly as in the Sound menu
 AUDIO_OUTPUT_SHORTCUT = ""
 
 VOICE = "Daniel"  # macOS TTS voice for greeting/farewell (`say -v ?` to list)
-GREETING = "Jarvis online. All home systems nominal. I'm listening."
-FAREWELL = "Jarvis going dark. Goodbye, sir."
+# In-character defaults; personalize in config_local.py if you like.
+GREETING = ("Good evening, sir. All systems are online, and I have taken "
+            "the liberty of listening.")
+FAREWELL = "Very good, sir. Going dark — do try not to need me immediately."
 
 # --- Matter server lifecycle --------------------------------------------
 # True: the Matter server (Aqara sensors) starts automatically when a

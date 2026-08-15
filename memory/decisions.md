@@ -70,6 +70,10 @@ Append-only. Newest last.
 
 **Rules for all tracked files, forever**: no personal names, emails, absolute `/Users/<name>` paths (use `~/Documents/Home_IoT`), device serials, or credentials. Machine-specific values go in `config_local.py` (gitignored, overrides config.py via star-import). Secrets stay in `.env`, `*.state`, `matter-data/` — all gitignored. launchd plists use `YOUR_USERNAME` placeholders (activated via sed one-liner in their comments). Owner is referred to as "the owner" in memory/docs. Before any commit: `git grep -il` for personal terms. **One deliberate exception**: the LICENSE copyright line carries the owner's full name, by his explicit choice (2026-08-16) — do NOT sanitize it.
 
+## 2026-08-16 — Jarvis persona: film-inspired, original writing
+
+**Decision**: `agents/jarvis.md` personality modeled on the cinematic J.A.R.V.I.S. archetype — British-butler composure, deadpan understatement, affectionate dry sarcasm toward the owner only, anticipatory competence, wry-but-prompt compliance, wit→zero during real incidents (leak/smoke). Guardrails: ≤1 flourish per reply, act before quipping. All example lines and the config greeting/farewell are ORIGINAL writing in that style — no movie dialogue is reproduced (IP hygiene for the public repo).
+
 ## 2026-08-14 — Security-first posture (Mac = always-on IoT commander)
 
 **Context**: the Mac stays on Ethernet permanently as the central home IoT hub, so it's a standing target on the home network.
