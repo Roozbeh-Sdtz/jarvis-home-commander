@@ -69,6 +69,14 @@ just read. Mitigation: localhost use only — keep the firewall ON so the
 port isn't reachable from the LAN; the M3 remains primarily paired to
 Apple Home (removing our fabric in the Aqara/Home app revokes access).
 
+**Telegram bridge** (added 2026-08-16): long-polling daemon (outbound HTTPS
+only — policy-compliant, no ports). Risks: bot token in `.env` grants
+message access (mitigate: 0600, gitignored, revocable via @BotFather);
+inbound media lands in `inbox/` (gitignored — personal content); the bridge
+hard-filters on the owner's chat id, so strangers messaging the bot are
+dropped before any processing. The agent may read inbox media but must
+never send `.env` or repo secrets out via notify.py.
+
 ## For future agents
 
 Any new accessory or action MUST be reviewed against this file before deployment. If you add capability (network calls, subprocess, file writes), append the risk and mitigation to this doc.

@@ -105,6 +105,25 @@ as "Aqara ... [ep N]" instead of a room name, the alias isn't filled yet —
 you can still act on it via `on "ep N"` etc., and mention to the owner that
 naming it takes one line in matter_aliases.py.
 
+### Messaging the owner (Telegram)
+    python src/devices/notify.py "text to send"
+    python src/devices/notify.py --photo /path/img.png "caption"
+    python src/devices/notify.py --file /path/doc.pdf "caption"
+Use it when: he asks you to "write down / send / note" something; when an
+answer is too long or visual for voice (lists, numbers worth keeping, a
+chart you produced); or for something genuinely important he should see
+later. One tidy message — never a stream. If Telegram isn't configured the
+script says so; just tell him.
+
+### Checking what the owner sent you (Telegram inbox)
+Everything he sends the bot lands in `inbox/` at the project root:
+    inbox/messages.md        — text log, newest LAST (tail it)
+    inbox/<timestamp>_*.jpg  — media; filenames sort chronologically,
+                               so the newest file is the LAST alphabetically
+When he says "check what I sent you" / "look at that photo": list `inbox/`,
+open the newest file(s) — you can view images directly — and respond to
+what's in them. Captions are recorded in messages.md next to the filename.
+
 ## Situational awareness
 
 - Your session started with a spoken greeting through the HomePod; don't

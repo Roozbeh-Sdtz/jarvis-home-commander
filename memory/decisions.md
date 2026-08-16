@@ -74,6 +74,12 @@ Append-only. Newest last.
 
 **Decision**: `agents/jarvis.md` personality modeled on the cinematic J.A.R.V.I.S. archetype — British-butler composure, deadpan understatement, affectionate dry sarcasm toward the owner only, anticipatory competence, wry-but-prompt compliance, wit→zero during real incidents (leak/smoke). Guardrails: ≤1 flourish per reply, act before quipping. All example lines and the config greeting/farewell are ORIGINAL writing in that style — no movie dialogue is reproduced (IP hygiene for the public repo).
 
+## 2026-08-16 — Telegram bridge: two-way owner↔agent channel
+
+**Context**: the owner wants the agent to send him notes/media when it judges something worth keeping, and to send text/photos/voice/video TO the agent from his phone (media can't be attached to the Codex voice chat directly).
+
+**Decision**: Telegram bot, two components. `src/devices/telegram_bot.py` = receiving daemon: long-polls Bot API (outbound HTTPS only — no ports, policy-compliant), hard-filters on the owner's chat id, files media into `inbox/` with timestamp-sortable names (newest = last alphabetically), text+captions into `inbox/messages.md`, replies "Saved" as receipt; offset persisted in `inbox/.offset`. `src/devices/notify.py` = sending CLI for the agent (text/--photo/--file). Setup: BotFather token → .env → `telegram_bot.py setup` captures chat id. Lifecycle: `./jarvis up/down/status` manages the daemon (skips gracefully if unconfigured). `inbox/` gitignored (personal media). Agent workflow in agents/jarvis.md: notify for things worth keeping (≤1 tidy message, no spam); "check what I sent you" → open newest inbox file(s) — the agent can view images. Receiving logic unit-tested offline; live test pending owner's bot creation.
+
 ## 2026-08-14 — Security-first posture (Mac = always-on IoT commander)
 
 **Context**: the Mac stays on Ethernet permanently as the central home IoT hub, so it's a standing target on the home network.

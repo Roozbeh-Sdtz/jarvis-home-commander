@@ -21,7 +21,9 @@ SOCK="$SWITCH/control.sock"
 STATE="$SWITCH/jarvis.state"
 PIDFILE="/tmp/jarvis-bridge.pid"
 MATTER_PIDFILE="/tmp/jarvis-matter.pid"
+TG_PIDFILE="/tmp/jarvis-telegram.pid"
 LOG="/tmp/jarvis.log"
+TG_LOG="/tmp/jarvis-telegram.log"
 
 say_ok()   { printf "  \033[32m✓\033[0m %s\n" "$1"; }
 say_warn() { printf "  \033[33m!\033[0m %s\n" "$1"; }
@@ -46,6 +48,15 @@ try:
 except OSError:
     sys.exit(1)
 EOF
+}
+
+tg_configured() {
+  grep -q "^TELEGRAM_BOT_TOKEN=..*" "$ROOT/.env" 2>/dev/null \
+    && grep -q "^TELEGRAM_CHAT_ID=..*" "$ROOT/.env" 2>/dev/null
+}
+
+tg_running() {
+  [ -f "$TG_PIDFILE" ] && kill -0 "$(cat "$TG_PIDFILE")" 2>/dev/null
 }
 
 cmd="${1:-up}"
@@ -87,6 +98,17 @@ case "$cmd" in
       say_warn "Codex app not found — voice sessions won't have a brain"
     fi
     say_ok "Matter server: starts on demand with each session"
+    if tg_configured; then
+      if tg_running; then
+        say_ok "Telegram bridge already running"
+      else
+        (cd "$ROOT/src/devices" && nohup "$PY" telegram_bot.py run >>"$TG_LOG" 2>&1 &
+         echo $! > "$TG_PIDFILE")
+        say_ok "Telegram bridge started (log: $TG_LOG)"
+      fi
+    else
+      say_warn "Telegram not configured (optional — see manual, Telegram section)"
+    fi
     echo
     echo "  All set. Say: \"Hey Siri, Call Jarvis\""
     ;;
@@ -98,6 +120,7 @@ case "$cmd" in
     if bridge_running; then say_ok "bridge running"; else say_warn "bridge NOT running"; fi
     if matter_running; then say_ok "matter server running"; else say_ok "matter server idle (on-demand)"; fi
     if pgrep -xq "Codex"; then say_ok "Codex running"; else say_warn "Codex NOT running"; fi
+    if tg_running; then say_ok "telegram bridge running"; elif tg_configured; then say_warn "telegram bridge NOT running"; else say_ok "telegram not configured (optional)"; fi
     ;;
 
   logs)
@@ -118,6 +141,10 @@ case "$cmd" in
       say_ok "matter server stopped"
       rm -f "$MATTER_PIDFILE"
     fi
+    if [ -f "$TG_PIDFILE" ] && kill "$(cat "$TG_PIDFILE")" 2>/dev/null; then
+      say_ok "telegram bridge stopped"
+    fi
+    rm -f "$TG_PIDFILE"
     ;;
 
   *)

@@ -124,6 +124,7 @@
   <a href="#aqara"><span class="b">°C</span>Sensors (Aqara)</a>
   <a href="#siri"><span class="b">◍</span>Siri chain (pairing)</a>
   <a href="#homekit"><span class="b">⌂</span>Apple Home / Eve</a>
+  <a href="#telegram"><span class="b">✈</span>Telegram link</a>
   <a href="#progress"><span class="b">✓</span>Setup progress</a>
   <a href="#queue"><span class="b">…</span>Improvement queue</a>
   <a href="#trouble"><span class="b">✚</span>Troubleshooting</a>
@@ -482,6 +483,53 @@ python homekit.py on "Jarvis Water Garden"<button class="copy">copy</button></di
   </div>
 </details>
 
+<details class="card" id="telegram">
+  <summary><span class="chev">▶</span><h3>Telegram — your pocket link to Jarvis</h3><span class="badge todo">OPTIONAL</span></summary>
+  <div class="body">
+    <p>Two-way channel between your phone and the house. <b>Jarvis → you</b>: when
+    something is worth writing down (a reading, a list, an alert), the agent sends it
+    to your Telegram. <b>You → Jarvis</b>: text, photos, voice notes, videos, files —
+    the bot files them into <code>inbox/</code> on the Mac, and you ask Jarvis to
+    "check what I sent you". Uses outbound HTTPS only — no open ports, and the bot
+    ignores every Telegram user except you.</p>
+    <p><b>Setup (5 minutes, once):</b></p>
+    <ol>
+      <li>In Telegram, talk to <b>@BotFather</b> → <code>/newbot</code> → pick a name
+          → copy the token.</li>
+      <li>Save it (any terminal):
+        <div class="cmd">echo "TELEGRAM_BOT_TOKEN=paste-token-here" &gt;&gt; ~/Documents/Home_IoT/.env<button class="copy">copy</button></div></li>
+      <li>Link your chat — run this, then send any message to your bot:
+        <div class="cmd">cd ~/Documents/Home_IoT/src/devices
+source ../jarvis_switch/.venv/bin/activate
+python telegram_bot.py setup<button class="copy">copy</button></div></li>
+      <li>Test the sending side:
+        <div class="cmd">python notify.py "Hello from the house."<button class="copy">copy</button></div></li>
+      <li>Done — <code>./jarvis up</code> now starts the bridge automatically
+          (<code>./jarvis status</code> shows it; log: <code>/tmp/jarvis-telegram.log</code>).</li>
+    </ol>
+    <p><b>How incoming media works:</b> everything lands in
+    <code>~/Documents/Home_IoT/inbox/</code> with timestamped names (newest = last
+    alphabetically); text goes to <code>inbox/messages.md</code>; captions are logged
+    next to their file. The bot replies "Saved" as a receipt.</p>
+    <p><b>How it knows it's you:</b> every Telegram account has a permanent numeric
+    chat ID. The <code>setup</code> step captures yours from the first message it
+    receives (120 s window) and stores it as <code>TELEGRAM_CHAT_ID</code> in
+    <code>.env</code>. The daemon then drops every message from any other ID —
+    silently, before processing — and <code>notify.py</code> can only write to that
+    ID. Message the bot immediately after starting <code>setup</code>; verify later
+    with @userinfobot if you're curious. <b>Re-link</b> (new account / wrong link):
+    delete the <code>TELEGRAM_CHAT_ID</code> line from <code>.env</code> and run
+    <code>setup</code> again.</p>
+    <div class="warn"><b>Bot hygiene:</b> display name can be anything ("J.A.R.V.I.S.");
+    the @username is public — pick something non-obvious. In @BotFather run
+    <code>/setjoingroups</code> → Disable so nobody can add your bot to groups. If the
+    token ever leaks, <code>/revoke</code> in @BotFather issues a fresh one (update
+    .env, restart via <code>./jarvis</code>).</div>
+    <div class="say">"Jarvis, check what I sent you" · "Send me the energy summary on
+    Telegram" · "Look at the photo I just sent — what valve is that?"</div>
+  </div>
+</details>
+
 <details class="card" id="progress" open>
   <summary><span class="chev">▶</span><h3>Setup progress</h3><span class="badge info">CHECKLIST</span></summary>
   <div class="body" id="checklist">
@@ -497,6 +545,7 @@ python homekit.py on "Jarvis Water Garden"<button class="copy">copy</button></di
     <div class="check"><input type="checkbox" id="c8"><label for="c8">Command-switch automations created in Home app</label></div>
     <div class="check"><input type="checkbox" id="c9" checked disabled><label for="c9">Aqara via local Matter: commissioned, sensors + AC control verified live</label></div>
     <div class="check"><input type="checkbox" id="c10"><label for="c10">Room names filled in <code>matter_aliases.py</code> (temp sensors, plugs, shades, leaks)</label></div>
+    <div class="check"><input type="checkbox" id="c14"><label for="c14">Telegram bridge: bot created, linked (<code>telegram_bot.py setup</code>), test message sent</label></div>
     <div class="check"><input type="checkbox" id="c11"><label for="c11">Full end-to-end: "Siri, Call Jarvis" → conversation → device control</label></div>
   </div>
 </details>

@@ -16,7 +16,8 @@ _Last updated: 2026-08-14_
 
 | Component | Path | State |
 |---|---|---|
-| Launcher | `./jarvis` (repo root) | one-command server start: `up` (bg bridge + Codex + checks, foreground if unpaired), `status`, `logs`, `down` |
+| Launcher | `./jarvis` (repo root) | one-command server start: `up` (bg bridge + Codex + Telegram bridge + checks, foreground if unpaired), `status`, `logs`, `down` |
+| Telegram bridge | `src/devices/telegram_bot.py` + `notify.py` | code complete, offline-tested 2026-08-16. Pending owner: BotFather token → .env → `setup` → test notify |
 | Jarvis Bridge | `src/jarvis_switch/jarvis.py` | bridge: `Jarvis` trigger + `Jarvis Light` command switch + control socket; sandbox-tested |
 | Voice session | `src/jarvis_switch/session.py` | **VERIFIED on real Mac 2026-08-14**: audio routing + greeting + Codex voice chat WITH project context (recipe: front window on a project chat → Cmd+N → global voice hotkey ⌃⌥⌘J). Requires terminal Accessibility permission |
 | Control socket | `src/jarvis_switch/control.py` | on/off/list via Unix socket 0600; sandbox-tested end-to-end |

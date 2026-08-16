@@ -278,6 +278,28 @@ Ask Jarvis: *"Water the garden"* — it will confirm first (that's by design).
 
 ---
 
+## 8b. Telegram — your pocket link to Jarvis (optional)
+
+Jarvis→you: the agent sends notes/photos worth keeping (`notify.py`).
+You→Jarvis: text/photos/voice/videos land in `inbox/` (timestamped; text in
+`inbox/messages.md`) and you ask Jarvis to "check what I sent you".
+Outbound HTTPS only; the bot ignores everyone but you.
+
+1. @BotFather → `/newbot` → copy token →
+   `echo "TELEGRAM_BOT_TOKEN=..." >> ~/Documents/Home_IoT/.env`
+2. `cd ~/Documents/Home_IoT/src/devices && source
+   ../jarvis_switch/.venv/bin/activate && python telegram_bot.py setup`
+   → send any message to the bot (chat id saves automatically).
+3. Test: `python notify.py "Hello from the house."`
+4. `./jarvis up` starts/stops the bridge from now on.
+
+**How it knows it's you:** `setup` captures your permanent chat ID from the
+first message received and saves `TELEGRAM_CHAT_ID` to `.env`; the daemon
+silently drops all other senders, and `notify.py` can only write to that
+ID. Re-link: delete the `TELEGRAM_CHAT_ID` line and run `setup` again.
+Bot hygiene: pick a non-obvious @username, `/setjoingroups` → Disable in
+@BotFather, `/revoke` if the token ever leaks.
+
 ## 9. Improvement queue (for future dev sessions)
 
 - Bosch: implement token auto-refresh (`bosch.py`).
